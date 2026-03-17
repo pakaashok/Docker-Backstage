@@ -87,6 +87,12 @@ catalog:
       target: ../../examples/template/template.yaml
       rules:
         - allow: [Template]
+    
+    # NEW: Onboarding template (ADDED SAFELY)
+    - type: file
+      target: ../../examples/template/onboard-user-template.yaml
+      rules:
+        - allow: [Template]
 
     # Local example organizational data
     - type: file
