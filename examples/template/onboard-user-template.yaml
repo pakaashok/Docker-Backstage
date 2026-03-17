@@ -1,12 +1,11 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: github-user-onboarding
-  title: Onboard GitHub User to Org
-  description: Invites a user to the Org and initializes a repo with CODEOWNERS.
+  name: onboarding-tile-v1 # Strictly unique name
+  title: Onboard GitHub User
+  description: Separate tile for inviting users and updating CODEOWNERS
   tags:
     - admin
-    - github
 spec:
   owner: user:pakaashok
   type: service
@@ -18,26 +17,23 @@ spec:
         githubUser:
           type: string
           title: GitHub Username
-          description: The user to invite and add to CODEOWNERS.
         repoName:
           type: string
           title: New Repository Name
 
   steps:
-    - id: fetch-base
-      name: Prepare Onboarding Files
+    - id: fetch-onboarding
+      name: Prepare Onboarding Skeleton
       action: fetch:template
       input:
-        url: ./onboarding-skeleton # A separate skeleton folder
+        url: ./onboarding-skeleton # This must be a separate folder
         values:
           githubUser: ${{ parameters.githubUser }}
 
-    - id: publish
+    - id: publish-onboarding
       name: Initialize Onboarding Repo
       action: publish:github
       input:
         allowedHosts: ['github.com']
         repoUrl: 'github.com?owner=pakaashok&repo=${{ parameters.repoName }}'
-        description: 'Onboarding repo for ${{ parameters.githubUser }}'
-
-        
+        defaultBranch: main
