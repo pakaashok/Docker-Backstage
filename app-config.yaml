@@ -75,4 +75,5 @@ catalog:
 kubernetes: {}
 
 permission:
-  enabled: true
+  enabled: false
+  
