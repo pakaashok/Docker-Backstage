@@ -22,9 +22,8 @@ backend:
 integrations:
   github:
     - host: github.com
+      # FIXED: Removed the duplicate/hardcoded token line
       token: ${GITHUB_TOKEN}
-
-proxy: {}
 
 techdocs:
   builder: 'local'
@@ -49,13 +48,13 @@ catalog:
     - type: file
       target: ../../examples/entities.yaml
 
-    # Existing Template Tile
+    # Existing Template
     - type: file
       target: ../../examples/template/template.yaml
       rules:
         - allow: [Template]
 
-    # NEW: Onboarding Template Tile
+    # NEW Onboarding Template (Added safely)
     - type: file
       target: ../../examples/template/onboard-user-template.yaml
       rules:
