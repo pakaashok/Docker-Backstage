@@ -1,7 +1,7 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: onboarding-workflow-tile # MUST be different from 'create-app-repo'
+  name: onboarding-workflow-tile
   title: Onboard User to Org
   description: Separate workflow to invite user and set CODEOWNERS
 spec:
@@ -24,7 +24,7 @@ spec:
       name: Fetch Onboarding Files
       action: fetch:template
       input:
-        url: ./onboarding-skeleton # Ensure this folder exists
+        url: ./onboarding-skeleton
         values:
           githubUser: ${{ parameters.githubUser }}
 
@@ -32,7 +32,9 @@ spec:
       name: Create Onboarding Repo
       action: publish:github
       input:
-        # Removed 'allowedHosts' as it's causing the InputError
         repoUrl: 'github.com?owner=pakaashok&repo=${{ parameters.repoName }}'
         defaultBranch: main
         description: 'Onboarding repo for ${{ parameters.githubUser }}'
+        # FIXED: Setting this to true allows the GitHub Action 
+        # to see the ORG_ADMIN_TOKEN on the GitHub Free plan.
+        public: true
