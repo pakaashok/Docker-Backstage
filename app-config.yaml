@@ -6,19 +6,18 @@ organization:
   name: My Company
 
 backend:
-  # REMOVED: auth.keys to prevent local 401/Unauthorized errors
   baseUrl: http://localhost:7007
   listen:
     port: 7007
   csp:
-    connect-src: ["'self'", 'http:', 'https:']
+    connect-src: ["'self'", "http:", "https:"]
   cors:
     origin: http://localhost:3000
     methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
     credentials: true
   database:
     client: better-sqlite3
-    connection: ':memory:'
+    connection: backstage.db   # ✅ persistent DB (FIXED)
 
 integrations:
   github:
@@ -28,17 +27,17 @@ integrations:
 proxy: {}
 
 techdocs:
-  builder: 'local'
+  builder: local
   generator:
-    runIn: 'docker'
+    runIn: docker
   publisher:
-    type: 'local'
+    type: local
 
 auth:
+  environment: development   # ✅ REQUIRED (FIXED)
   providers:
-    # FIXED: This is all you need for local guest access
     guest:
-      dangerouslyAllowEveryone: true
+      dangerouslyAllowOutsideDevelopment: true   # ✅ CORRECT FLAG (FIXED)
 
 scaffolder: {}
 
@@ -47,29 +46,28 @@ catalog:
     entityFilename: catalog-info.yaml
     pullRequestBranchName: backstage-integration
   rules:
-    - allow: [Component, System, API, Resource, Location]
+    - allow: [Component, System, API, Resource, Location, Template]  # ✅ added Template
   locations:
     - type: file
       target: ../../examples/entities.yaml
 
-    # Tile 1: Original Template
+    # Template 1
     - type: file
       target: ../../examples/template/template.yaml
       rules:
         - allow: [Template]
-    
-    # Tile 2: NEW Onboarding Template
+
+    # Template 2 (Onboarding)
     - type: file
       target: ../../examples/template/onboard-user-template.yaml
       rules:
         - allow: [Template]
 
+    # Users & Groups
     - type: file
       target: ../../examples/org.yaml
       rules:
         - allow: [User, Group]
-
-# kubernetes: {}
 
 permission:
   enabled: false
