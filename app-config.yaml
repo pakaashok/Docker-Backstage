@@ -17,7 +17,7 @@ backend:
     credentials: true
   database:
     client: better-sqlite3
-    connection: backstage.db   # ✅ persistent DB (FIXED)
+    connection: backstage.db
 
 integrations:
   github:
@@ -34,10 +34,10 @@ techdocs:
     type: local
 
 auth:
-  environment: development   # ✅ REQUIRED (FIXED)
+  environment: development
   providers:
     guest:
-      dangerouslyAllowEveryone: true   # ✅ CORRECT FLAG (FIXED)
+      dangerouslyAllowEveryone: true
 
 scaffolder: {}
 
@@ -45,27 +45,30 @@ catalog:
   import:
     entityFilename: catalog-info.yaml
     pullRequestBranchName: backstage-integration
+
   rules:
-    - allow: [Component, System, API, Resource, Location, Template]  # ✅ added Template
+    - allow: [Component, System, API, Resource, Location, Template]
+
   locations:
+    # ✅ FIXED PATHS (relative to backend)
     - type: file
-      target: ../../examples/entities.yaml
+      target: ./examples/entities.yaml
 
     # Template 1
     - type: file
-      target: ../../examples/template/template.yaml
+      target: ./examples/template/template.yaml
       rules:
         - allow: [Template]
 
     # Template 2 (Onboarding)
     - type: file
-      target: ../../examples/template/onboard-user-template.yaml
+      target: ./examples/template/onboard-user-template.yaml
       rules:
         - allow: [Template]
 
     # Users & Groups
     - type: file
-      target: ../../examples/org.yaml
+      target: ./examples/org.yaml
       rules:
         - allow: [User, Group]
 
