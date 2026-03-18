@@ -4,6 +4,7 @@ metadata:
   name: onboarding-workflow-tile
   title: Onboard User to Org
   description: Workflow to create repo, team, and CODEOWNERS
+
 spec:
   owner: user:pakaashok
   type: service
@@ -30,6 +31,7 @@ spec:
         url: ./onboarding-skeleton
         values:
           githubUser: ${{ parameters.githubUser }}
+          teamName: ${{ parameters.teamName }}   # ✅ FIX ADDED
 
     - id: publish-onboarding
       name: Create Onboarding Repo
@@ -38,8 +40,7 @@ spec:
         repoUrl: 'github.com?owner=quantum-lab-x&repo=${{ parameters.repoName }}'
         defaultBranch: main
         description: 'Onboarding repo for ${{ parameters.githubUser }}'
-        # FIXED: Must be 'public' for GitHub Free Tier to access Org Secrets
-        repoVisibility: public 
+        repoVisibility: public
 
     - id: trigger-team-creation
       name: Create GitHub Team and Add User
@@ -51,18 +52,4 @@ spec:
         workflowInputs:
           team_name: ${{ parameters.teamName }}
           github_user: ${{ parameters.githubUser }}
-
-    - id: add-codeowners
-      name: Add CODEOWNERS File
-      action: publish:github:pull-request
-      input:
-        repoUrl: 'github.com?owner=quantum-lab-x&repo=${{ parameters.repoName }}'
-        branchName: add-codeowners
-        title: "Add CODEOWNERS"
-        description: "Adding CODEOWNERS file"
-        sourcePath: .
-        targetPath: .
-        files:
-          - path: .github/CODEOWNERS
-            content: |
-              * @quantum-lab-x/${{ parameters.teamName }}
+          
