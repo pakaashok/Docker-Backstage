@@ -38,8 +38,8 @@ techdocs:
 auth:
   environment: development
   providers:
-    guest:
-      dangerouslyAllowEveryone: true
+    guest: {}
+      
 
 scaffolder: {}
 
