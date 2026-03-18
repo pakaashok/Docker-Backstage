@@ -3,14 +3,14 @@ kind: Template
 metadata:
   name: onboarding-workflow-tile
   title: Onboard User to Org
-  description: Separate workflow to invite user and set CODEOWNERS
+  description: Workflow to create repo, team, and CODEOWNERS
 spec:
   owner: user:pakaashok
   type: service
 
   parameters:
     - title: Onboarding Details
-      required: [githubUser, repoName]
+      required: [githubUser, repoName, teamName]
       properties:
         githubUser:
           type: string
@@ -18,8 +18,12 @@ spec:
         repoName:
           type: string
           title: New Repository Name
+        teamName:
+          type: string
+          title: GitHub Team Name
 
   steps:
+    # 1️⃣ Fetch template files
     - id: fetch-onboarding
       name: Fetch Onboarding Files
       action: fetch:template
@@ -28,13 +32,37 @@ spec:
         values:
           githubUser: ${{ parameters.githubUser }}
 
+    # 2️⃣ Create repo in ORG (FIXED)
     - id: publish-onboarding
       name: Create Onboarding Repo
       action: publish:github
       input:
-        repoUrl: 'github.com?owner=pakaashok&repo=${{ parameters.repoName }}'
+        repoUrl: 'github.com?owner=quantum-lab-x&repo=${{ parameters.repoName }}'
         defaultBranch: main
         description: 'Onboarding repo for ${{ parameters.githubUser }}'
-        # FIXED: Use repoVisibility instead of 'public'
-        # This makes the repo public so it can access Org Secrets on Free Tier
-        repoVisibility: public
+        repoVisibility: private
+
+    # 3️⃣ Trigger GitHub Action to create team + add user
+    - id: trigger-team-creation
+      name: Create GitHub Team and Add User
+      action: github:actions:dispatch
+      input:
+        repoUrl: 'github.com?owner=quantum-lab-x&repo=platform-automation'
+        workflowId: create-team.yml
+        branchOrTagName: main
+        workflowInputs:
+          team_name: ${{ parameters.teamName }}
+          github_user: ${{ parameters.githubUser }}
+
+    # 4️⃣ Add CODEOWNERS
+    - id: add-codeowners
+      name: Add CODEOWNERS File
+      action: github:repo:push
+      input:
+        repoUrl: 'github.com?owner=quantum-lab-x&repo=${{ parameters.repoName }}'
+        branchName: main
+        commitMessage: "Add CODEOWNERS"
+        files:
+          - path: .github/CODEOWNERS
+            content: |
+              * @quantum-lab-x/${{ parameters.teamName }}
