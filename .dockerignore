@@ -1,8 +1,19 @@
-.git
+# Dependency directories
+node_modules
+packages/*/node_modules
 .yarn/cache
 .yarn/install-state.gz
-node_modules
-packages/*/src
-packages/*/node_modules
-plugins
+
+# Build outputs (Avoid copying Windows builds into the Linux container)
+dist
+build
+packages/*/dist
+
+# Secrets and local configs
+.git
 *.local.yaml
+.env
+
+# Misc
+.DS_Store
+Thumbs.db

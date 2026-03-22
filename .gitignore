@@ -57,3 +57,5 @@ e2e-test-report/
 
 # Local configuration files
 app-config.local.yaml
+
+GITHUB_TOKEN=ghp_your_actual_token_here

@@ -3,53 +3,56 @@ kind: Template
 metadata:
   name: onboarding-workflow-tile
   title: Onboard User to Org
-  description: Workflow to create repo, team, and CODEOWNERS
+  description: Automation to create repo and teams
 
 spec:
-  owner: user:pakaashok
+  # 'owner' is now a parameter or generic
+  owner: guest
   type: service
 
   parameters:
-    - title: Onboarding Details
-      required: [githubUser, repoName, teamName]
+    - title: GitHub Organization Details
+      required: [githubOrg, githubUser, repoName]
       properties:
+        githubOrg:
+          type: string
+          title: GitHub Organization Name
+          default: "your-org-name"
         githubUser:
           type: string
-          title: GitHub Username
+          title: Target GitHub Username
         repoName:
           type: string
           title: New Repository Name
         teamName:
           type: string
-          title: GitHub Team Name
+          title: New Team Name
 
   steps:
     - id: fetch-onboarding
-      name: Fetch Onboarding Files
+      name: Fetch Skeleton
       action: fetch:template
       input:
         url: ./onboarding-skeleton
         values:
           githubUser: ${{ parameters.githubUser }}
-          teamName: ${{ parameters.teamName }}
 
     - id: publish-onboarding
-      name: Create Onboarding Repo
+      name: Create GitHub Repository
       action: publish:github
       input:
-        repoUrl: 'github.com?owner=quantum-lab-x&repo=${{ parameters.repoName }}'
+        # Dynamically uses the Org name provided in the UI
+        repoUrl: 'github.com?owner=${{ parameters.githubOrg }}&repo=${{ parameters.repoName }}'
         defaultBranch: main
-        description: 'Onboarding repo for ${{ parameters.githubUser }}'
         repoVisibility: public
 
-    - id: trigger-team-creation
-      name: Create GitHub Team and Add User
+    - id: trigger-automation
+      name: Trigger Actions
       action: github:actions:dispatch
       input:
-        repoUrl: 'github.com?owner=quantum-lab-x&repo=platform-automation'
+        repoUrl: 'github.com?owner=${{ parameters.githubOrg }}&repo=platform-automation'
         workflowId: create-team.yml
         branchOrTagName: main
         workflowInputs:
           team_name: ${{ parameters.teamName }}
           github_user: ${{ parameters.githubUser }}
-          repo_name: ${{ parameters.repoName }}   # ✅ FIX ADDED

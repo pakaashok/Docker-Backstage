@@ -1,13 +1,23 @@
 apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: root-locations
+  description: Main index for all local catalog and template data
+spec:
+  targets:
+    # This points Backstage to your templates and entities
+    - ./examples/entities.yaml
+    - ./examples/org.yaml
+    - ./examples/template/template.yaml
+    - ./examples/template/onboard-user-template.yaml
+
+---
+apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: backstage
-  description: An example of a Backstage application.
-  # Example for optional annotations
-  # annotations:
-  #   github.com/project-slug: backstage/backstage
-  #   backstage.io/techdocs-ref: dir:.
+  name: backstage-platform
+  description: Acube Farms & Holdings Developer Portal
 spec:
   type: website
-  owner: john@example.com
-  lifecycle: experimental
+  owner: guest
+  lifecycle: production

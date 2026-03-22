@@ -1,14 +1,15 @@
 app:
-  title: Scaffolded Backstage App
+  title: Acube Farms Platform
   baseUrl: http://localhost:3000
 
 organization:
-  name: My Company
+  name: Acube Farms & Holdings
 
 backend:
   baseUrl: http://localhost:7007
   listen:
     port: 7007
+    host: 0.0.0.0  # ✅ REQUIRED for Raspberry Pi access
   csp:
     connect-src: ["'self'", "http:", "https:"]
   cors:
@@ -19,7 +20,7 @@ backend:
   database:
     client: better-sqlite3
     connection:
-      directory: ./backstage-data   # ✅ FIXED
+      directory: ./backstage-data
 
 integrations:
   github:
@@ -38,8 +39,8 @@ techdocs:
 auth:
   environment: development
   providers:
-    guest: {}
-      
+    guest:
+      dangerouslyAllowEveryone: true
 
 scaffolder: {}
 
@@ -49,30 +50,21 @@ catalog:
     pullRequestBranchName: backstage-integration
 
   rules:
-    - allow: [Component, System, API, Resource, Location, Template]
+    - allow: [Component, System, API, Resource, Location, Template, User, Group]
 
   locations:
-    # ✅ FIXED PATHS (relative to backend)
+    # ✅ FIXED: Now using relative paths that work inside Docker container
     - type: file
-      target: ../../examples/entities.yaml
+      target: ./examples/entities.yaml
 
-    # Template 1
     - type: file
-      target: ../../examples/template/template.yaml
-      rules:
-        - allow: [Template]
+      target: ./examples/template/template.yaml
 
-    # Template 2 (Onboarding)
     - type: file
-      target: ../../examples/template/onboard-user-template.yaml
-      rules:
-        - allow: [Template]
+      target: ./examples/template/onboard-user-template.yaml
 
-    # Users & Groups
     - type: file
       target: ./examples/org.yaml
-      rules:
-        - allow: [User, Group]
 
 permission:
   enabled: false
