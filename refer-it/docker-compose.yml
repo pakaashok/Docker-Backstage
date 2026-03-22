@@ -1,0 +1,42 @@
+services:
+  # The Backstage Application (Your ARM64 Build)
+  backstage:
+    image: pakaashok/backstage-pi:latest
+    container_name: backstage_app
+    restart: always
+    ports:
+      - "7007:7007"
+    environment:
+      - NODE_ENV=production
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      # These variables are pulled from the local .env file
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - BASE_URL=${BASE_URL}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # The Postgres Database
+  db:
+    image: postgres:15-alpine
+    container_name: backstage_db
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=backstage_plugin_catalog
+    volumes:
+      # This ensures the catalog data is saved on the Pi's disk
+      - backstage-data:/var/lib/postgresql/data
+
+volumes:
+  backstage-data:
+    driver: local
