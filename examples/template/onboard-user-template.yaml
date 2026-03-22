@@ -6,13 +6,12 @@ metadata:
   description: Automation to create repo and teams
 
 spec:
-  # 'owner' is now a parameter or generic
   owner: guest
   type: service
 
   parameters:
     - title: GitHub Organization Details
-      required: [githubOrg, githubUser, repoName]
+      required: [githubOrg, githubUser, repoName, teamName] # ✅ Added teamName as required
       properties:
         githubOrg:
           type: string
@@ -36,12 +35,12 @@ spec:
         url: ./onboarding-skeleton
         values:
           githubUser: ${{ parameters.githubUser }}
+          repoName: ${{ parameters.repoName }} # ✅ Pass repoName to skeleton files if needed
 
     - id: publish-onboarding
       name: Create GitHub Repository
       action: publish:github
       input:
-        # Dynamically uses the Org name provided in the UI
         repoUrl: 'github.com?owner=${{ parameters.githubOrg }}&repo=${{ parameters.repoName }}'
         defaultBranch: main
         repoVisibility: public
@@ -56,3 +55,4 @@ spec:
         workflowInputs:
           team_name: ${{ parameters.teamName }}
           github_user: ${{ parameters.githubUser }}
+          repo_name: ${{ parameters.repoName }} # ✅ FIX: This matches the 'repo_name' input in your GitHub Action
