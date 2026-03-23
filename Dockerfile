@@ -1,34 +1,57 @@
-# --- STAGE 1: Build (The "Heavy Lifting") ---
-FROM node:18-bookworm-slim AS build
+# --- STAGE 1: Build ---
+FROM node:20 AS build
 WORKDIR /app
 
-# FIX: Install compilers in Stage 1 so native modules (sqlite3, etc.) can build
+# Install only the necessary build-essential tools
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends python3 make g++ libpq-dev && \
+    apt-get install -y --no-install-recommends \
+    python3 \
+    make \
+    g++ \
+    build-essential \
+    pkg-config \
+    libv8-dev \
+    libpq-dev && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy the entire project from your local directory
+# Enable Corepack for Yarn 4
+RUN corepack enable
+
+# Copy only dependency files
+COPY package.json yarn.lock .yarnrc.yml ./
+COPY .yarn ./.yarn
+COPY packages/backend/package.json packages/backend/package.json
+COPY packages/app/package.json packages/app/package.json
+
+# ✅ FIX: Tell Yarn to ignore the broken patches and just install the code
+ENV YARN_ENABLE_IMMUTABLE_INSTALLS=false
+ENV IVM_FLAGS="--build-from-source"
+
+# Run install
+RUN yarn install --network-timeout 600000
+
+# Copy the rest of the project and build
 COPY . .
+RUN yarn build:all
 
-# Run the build process
-RUN yarn install --immutable && yarn build:all
-
-# --- STAGE 2: Runtime (The "Slim Image" for the Pi) ---
-FROM node:18-bookworm-slim
+# --- STAGE 2: Runtime ---
+FROM node:20-slim
 WORKDIR /app
 
-# Install only the runtime library for Postgres (smaller footprint)
+# Install runtime library for Postgres
 RUN apt-get update && apt-get install -y libpq-dev && rm -rf /var/lib/apt/lists/*
 
-# Copy the compiled bundle from Stage 1
+# Copy the compiled bundle
 COPY --from=build /app/packages/backend/dist/bundle.tar.gz .
 RUN tar xzf bundle.tar.gz && rm bundle.tar.gz
 
-# Install only production-ready modules
-RUN yarn install --production --network-timeout 600000
+# Install production deps
+RUN corepack enable && yarn install --production --network-timeout 600000
 
-# Optimization for Raspberry Pi 4GB/8GB RAM
-ENV NODE_OPTIONS="--max-old-space-size=2048"
+COPY app-config.yaml app-config.production.yaml ./
 
-# Start the app using both config files
-CMD ["node", "packages/backend/dist/index.js", "--config", "app-config.yaml", "--config", "app-config.production.yaml"]
+ENV NODE_OPTIONS="--max-old-space-size=3072"
+ENV NODE_ENV=production
+
+# Start the app
+CMD ["node", "packages/backend", "--config", "app-config.yaml", "--config", "app-config.production.yaml"]
